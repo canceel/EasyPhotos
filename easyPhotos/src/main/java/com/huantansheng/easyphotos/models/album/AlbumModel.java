@@ -7,9 +7,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.core.content.PermissionChecker;
 
@@ -63,20 +63,31 @@ public class AlbumModel {
     public volatile boolean canRun = true;
 
     public void query(Context context, final CallBack callBack) {
-        final Context appCxt = context.getApplicationContext();
-        if (PermissionChecker.checkSelfPermission(context,
-                Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
-            if (null != callBack) callBack.onAlbumWorkedCallBack();
-            return;
-        }
-        canRun = true;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                initAlbum(appCxt);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (PermissionChecker.checkSelfPermission(context, Manifest.permission.READ_MEDIA_IMAGES) != PermissionChecker.PERMISSION_GRANTED) {
                 if (null != callBack) callBack.onAlbumWorkedCallBack();
+                return;
             }
-        }).start();
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            if (PermissionChecker.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
+                if (null != callBack) callBack.onAlbumWorkedCallBack();
+                return;
+            }
+        }
+//        final Context appCxt = context.getApplicationContext();
+//        if (PermissionChecker.checkSelfPermission(context,
+//                Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
+//            if (null != callBack) callBack.onAlbumWorkedCallBack();
+//            return;
+//        }
+//        canRun = true;
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                initAlbum(appCxt);
+//                if (null != callBack) callBack.onAlbumWorkedCallBack();
+//            }
+//        }).start();
     }
 
     public void stopQuery() {
@@ -295,8 +306,8 @@ public class AlbumModel {
                 ArrayList<Photo> tempList = new ArrayList<>(photoSize);
                 for (int i = 0; i < selectSize; i++) {
                     for (int j = 0; j < photoSize; j++) {
-                        if (Result.photos.get(j).path.equals(Setting.selectedPhotos.get(i).path)){
-                            tempList.add(i,Result.photos.get(j));
+                        if (Result.photos.get(j).path.equals(Setting.selectedPhotos.get(i).path)) {
+                            tempList.add(i, Result.photos.get(j));
                         }
                     }
                 }
